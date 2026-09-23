@@ -319,26 +319,97 @@
     .back-top:hover {
       color: var(--accent);
     }
+
+    .lang-switch {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.55rem 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(8, 28, 21, 0.92);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .lang-switch label {
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #b7e09a;
+      font-weight: 600;
+    }
+
+    .lang-switch select {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #f4fceb;
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.35rem 1.5rem 0.35rem 0.15rem;
+      cursor: pointer;
+      outline: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #b7e09a 50%),
+        linear-gradient(135deg, #b7e09a 50%, transparent 50%);
+      background-position:
+        calc(100% - 12px) 52%,
+        calc(100% - 7px) 52%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .lang-switch select option {
+      color: #10261c;
+      background: #f4f7f5;
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        padding-top: 4.25rem;
+      }
+
+      .lang-switch label {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="lang-switch">
+    <label for="lang-select" id="lang-label">Language</label>
+    <select id="lang-select" aria-label="Language">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="de">Deutsch</option>
+      <option value="fr">Français</option>
+      <option value="ru">Русский</option>
+    </select>
+  </div>
+
   <div class="page">
     <header class="hero">
-      <div class="hero-eyebrow">Playaiai · Legal</div>
-      <h1>Privacy Policy</h1>
-      <p>
+      <div class="hero-eyebrow" id="hero-eyebrow">Playaiai · Legal</div>
+      <h1 id="hero-title">Privacy Policy</h1>
+      <p id="hero-lead">
         How Playaiai collects, uses, and protects personal information in
         <strong>Animal Quest: Find Them All</strong>.
       </p>
       <div class="meta">
-        <span>Effective: August 2, 2026</span>
-        <span>Updated: August 2, 2026</span>
+        <span id="meta-effective">Effective: August 2, 2026</span>
+        <span id="meta-updated">Updated: August 2, 2026</span>
       </div>
     </header>
 
     <div class="layout">
-      <aside class="toc" aria-label="Table of contents">
-        <h2>Contents</h2>
+      <aside class="toc" aria-label="Table of contents" id="toc">
+        <h2 id="toc-title">Contents</h2>
         <nav>
           <a href="#introduction">1. Introduction</a>
           <a href="#controller">2. Data Controller</a>
@@ -366,7 +437,7 @@
         </nav>
       </aside>
 
-      <main class="content">
+      <main class="content" id="policy-main">
         <section id="introduction">
           <h2>1. Introduction</h2>
           <p>
@@ -825,14 +896,98 @@
             Thank you for taking the time to read our Privacy Policy. We are committed to protecting your privacy and providing you with transparency about our data practices. If you have any questions or concerns, please contact us at
             <a href="mailto:playaiai.info@gmail.com">playaiai.info@gmail.com</a>.
           </div>
-          <a class="back-top" href="#">↑ Back to top</a>
+          <a class="back-top" href="#" id="back-top">↑ Back to top</a>
         </section>
       </main>
     </div>
 
     <footer class="footer">
-      <p>© 2026 Playaiai · Animal Quest: Find Them All</p>
+      <p id="footer-copy">© 2026 Playaiai · Animal Quest: Find Them All</p>
     </footer>
   </div>
+
+  <script src="privacy-i18n.js"></script>
+  <script>
+    const STORAGE_KEY = "aq-privacy-lang";
+    const DEFAULT_LANG = "en";
+    const SUPPORTED = new Set(["en", "es", "de", "fr", "ru"]);
+    let cachedEn = null;
+
+    function buildToc(links) {
+      return links.map(([href, label]) => `<a href="${href}">${label}</a>`).join("\n");
+    }
+
+    function cacheEnglish() {
+      if (cachedEn) return;
+      const tocNav = document.querySelector("#toc nav");
+      const main = document.getElementById("policy-main");
+      cachedEn = {
+        pageTitle: document.title,
+        langLabel: document.getElementById("lang-label").textContent,
+        heroEyebrow: document.getElementById("hero-eyebrow").textContent,
+        heroTitle: document.getElementById("hero-title").textContent,
+        heroLead: document.getElementById("hero-lead").innerHTML,
+        metaEffective: document.getElementById("meta-effective").textContent,
+        metaUpdated: document.getElementById("meta-updated").textContent,
+        tocTitle: document.getElementById("toc-title").textContent,
+        footer: document.getElementById("footer-copy").textContent,
+        toc: tocNav.innerHTML,
+        main: main.innerHTML,
+      };
+    }
+
+    function applyChrome(dict) {
+      document.title = dict.pageTitle;
+      document.getElementById("lang-label").textContent = dict.langLabel;
+      document.getElementById("hero-eyebrow").textContent = dict.heroEyebrow;
+      document.getElementById("hero-title").textContent = dict.heroTitle;
+      document.getElementById("hero-lead").innerHTML = dict.heroLead;
+      document.getElementById("meta-effective").textContent = dict.metaEffective;
+      document.getElementById("meta-updated").textContent = dict.metaUpdated;
+      document.getElementById("toc-title").textContent = dict.tocTitle;
+      document.getElementById("footer-copy").textContent = dict.footer;
+    }
+
+    function applyLang(lang) {
+      if (!SUPPORTED.has(lang)) lang = DEFAULT_LANG;
+      cacheEnglish();
+
+      document.documentElement.lang = lang;
+      const tocNav = document.querySelector("#toc nav");
+      const main = document.getElementById("policy-main");
+
+      if (lang === "en") {
+        applyChrome(cachedEn);
+        tocNav.innerHTML = cachedEn.toc;
+        main.innerHTML = cachedEn.main;
+      } else {
+        const dict = window.PRIVACY_I18N[lang];
+        applyChrome(dict);
+        tocNav.innerHTML = buildToc(dict.toc);
+        main.innerHTML = dict.mainHtml;
+      }
+
+      const select = document.getElementById("lang-select");
+      if (select) select.value = lang;
+      try { localStorage.setItem(STORAGE_KEY, lang); } catch (_) {}
+      window.scrollTo({ top: 0, behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
+    }
+
+    function resolveInitialLang() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && SUPPORTED.has(saved)) return saved;
+      } catch (_) {}
+      const nav = (navigator.language || "en").slice(0, 2).toLowerCase();
+      if (SUPPORTED.has(nav)) return nav;
+      return DEFAULT_LANG;
+    }
+
+    document.getElementById("lang-select").addEventListener("change", (e) => {
+      applyLang(e.target.value);
+    });
+
+    applyLang(resolveInitialLang());
+  </script>
 </body>
 </html>
